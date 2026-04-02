@@ -1,0 +1,259 @@
+{
+  "name": "AI Agent workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -192,
+        160
+      ],
+      "id": "f2d7470f-2ab8-49aa-84d9-0bc49754b047",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e2353824-8b6e-4183-9730-7c3aee0f5318",
+              "name": "prix_btc",
+              "value": "={{ $json.bitcoin.usd }}",
+              "type": "string"
+            },
+            {
+              "id": "f2ab1c7d-892f-42d2-aed0-811841a0ca12",
+              "name": "date",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        16,
+        160
+      ],
+      "id": "dd3fb3ee-8847-457d-9f7b-4c4972c4ca12",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KuV7k4ds0nZVETaHVCiKwf1yIwJRvrb06B1y_hISeM4",
+          "mode": "list",
+          "cachedResultName": "Suivi Bitcoin",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KuV7k4ds0nZVETaHVCiKwf1yIwJRvrb06B1y_hISeM4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Feuille 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KuV7k4ds0nZVETaHVCiKwf1yIwJRvrb06B1y_hISeM4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ $json.date }}",
+            "prix_btc": "={{ $json.prix_btc }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "prix_btc",
+              "displayName": "prix_btc",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        432,
+        224
+      ],
+      "id": "979264e2-295c-46da-bc67-dcedeb6a5337",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "j3wHimjYrX3HoH6S",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -464,
+        160
+      ],
+      "id": "157dceb3-0095-4b95-8199-99c2d60b6285",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4e69e95c-24d5-42fc-8dee-457987039646",
+              "leftValue": "={{ $('Edit Fields').item.json.prix_btc }}",
+              "rightValue": 80000,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        160
+      ],
+      "id": "22a0f36c-9f2c-409b-af6e-306e99598853",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "5186657264",
+        "text": "=🚨 Alerte Bitcoin !\nPrix actuel : ${{ $('Edit Fields').item.json.prix_btc }}\nDate : {{ $('Edit Fields').item.json.date }}",
+        "replyMarkup": "=none",
+        "forceReply": {},
+        "replyKeyboardOptions": {},
+        "replyKeyboardRemove": {},
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        464,
+        32
+      ],
+      "id": "dcfe5419-3d15-4289-ad1c-a850bb2208c9",
+      "name": "Send a text message",
+      "webhookId": "75c960b4-7841-40cb-b82f-c3928db0f0d6",
+      "credentials": {
+        "telegramApi": {
+          "id": "ieP01E2ksZOfP9WZ",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "ab3c27c8-e86f-406c-bb21-d357620f13fa",
+  "meta": {
+    "templateId": "ready-to-run-ai-workflow",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b8254975fa9435c6ac988d206ba09626b706a53488574c99dc5ebdf46dc0b7f0"
+  },
+  "id": "FCYkfWYfiycs7Pgx",
+  "tags": []
+}
